@@ -11,7 +11,7 @@ def bridge_nwk_sace(d, a, gamma_it, T_max, q, phi):
 
     def Q(theta, u):
         if theta > phi(a,u):
-            raise ValueError('Theta not achievable for u, this probably means gamma was too high')
+            raise ValueError('Theta not achievable for u')
         new_u = u.copy()
         for i in range(u.shape[0]):
             u_i = new_u.copy()
@@ -52,9 +52,11 @@ def bridge_nwk_sace(d, a, gamma_it, T_max, q, phi):
 
         if phi(a, y) < theta:
             leap_count += 1
-            y = y_list[-1]
-            theta = theta_list[-1]
-            continue
+            theta = min(theta, phi(a, y))
+
+            # y = y_list[-1]
+            # theta = theta_list[-1]
+            # continue
 
         s = (1-gamma)*s + gamma*S(y)
         v = v_hat(s)
@@ -116,6 +118,8 @@ pow = 0.8
 gamma_it = gamma_yielder(v0, pow)
 theta_list, v_list, leap_count_list = bridge_nwk_sace(d, a, gamma_it, T_max, q, paper_bridge)
 
+
+# Plotting
 f, axs = plt.subplots(1, 2)
 axs[0].plot(range(1000, len(theta_list)), theta_list[1000:], label='theta')
 
@@ -127,6 +131,7 @@ v_array = np.array(v_list)
 for i in range(d):
     axs[1].plot(range(1000, len(theta_list)), v_array[1000:, i], label='v{}'.format(i+1))
 axs[1].legend()
+print(v_array[-1])
 axs[1].set_title('v parameters')
 plt.title('Bridge with v0={}, pow={}'.format(v0,pow))
 plt.show()
